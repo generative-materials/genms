@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en-GB" class="no-js fixed-nav">
+<head>
+	<meta charset="UTF-8">
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="format-detection" content="telephone=no">
+	<meta name='robots' content='index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' />
+
+	<title>GenMS: Generative Hierarchical Materials Search</title>
+
+
+	<link rel='stylesheet' id='wayve-all-css' href='style.css' type='text/css' media='all' />
+	<link rel='stylesheet' id='wayve-all-css' href='custom.css' type='text/css' media='all' />
+	<script src="script.js" defer></script>
+	<script src="bootstrap.js"></script>
+        <script type="text/x-mathjax-config">
+          MathJax.Hub.Config({
+              tex2jax: {
+                  inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                  processEscapes: true
+              }
+          });
+        </script>
+        <script type="text/javascript"
+                src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+        </script>        
+	<link rel="stylesheet" href="bootstrap-grid.css">
+	    
+</head>
+
+<nav>
+  <ul>
+        <li><a href="#search" data-scroll>Multi-Objective Search</a></li>
+        <li><a href="#diffusion" data-scroll>Compact Representation</a></li>
+	<li><a href="#evaluation" data-scroll>Evaluation</a></li>
+	<li><a href="#visualization" data-scroll>Generated Structures</a></li>
+    </ul>
+</nav>
+
+
+<article class='blog-post'>
+
+  <div class=blog-intro-container>
+  <h1 class='too-long' style="text-align:center;">GenMS: Generative Hierarchical Materials Search</h1>
+
+    <div id="authors">
+        <center>
+            <div class="author-row-new">
+              <a href="https://sherryy.github.io/" style="color: darkblue; text-decoration: none;">Sherry Yang</a>,
+              <a href="https://simonbatzner.github.io/" style="color: darkblue; text-decoration: none;">Simon Batzner</a>,
+              <a href="https://ruiqigao.github.io/" style="color: darkblue; text-decoration: none;">Ruiqi Gao</a>,	      
+              <a href="https://scholar.google.com/citations?user=7JNUMRAAAAAJ&hl=en" style="color: darkblue; text-decoration: none;">Muratahan Aykol</a>,
+              <a href="https://scholar.google.co.uk/citations?user=IzwvqPIAAAAJ&hl=en" style="color: darkblue; text-decoration: none;">Alexander L. Gaunt</a>,
+              <a href="https://scholar.google.com/citations?user=YJd3v4QAAAAJ&hl=en" style="color: darkblue; text-decoration: none;">Brendan McMorrow</a>,
+              <a href="https://danilorezende.com/about/" style="color: darkblue; text-decoration: none;">Danilo J. Rezende</a>,<br>
+              <a href="http://webdocs.cs.ualberta.ca/~dale/" style="color: darkblue; text-decoration: none;">Dale Schuurmans</a>,
+              <a href="https://scholar.google.com/citations?user=Vzr1RukAAAAJ&hl=en" style="color: darkblue; text-decoration: none;">Igor Mordatch</a>,
+              <a href="https://scholar.google.com/citations?user=Mu_8iOEAAAAJ&hl=en" style="color: darkblue; text-decoration: none;">Ekin Dogus Cubuk</a>
+            </div>
+        </center>
+        <center>
+        <div class="affiliations">
+          <span>
+            <image src="materials/dm_logo.png" height="40px" style="vertical-align: middle;"> 
+	    Google DeepMind</span>
+        </div>
+    </div>  
+  </div>  
+  
+      
+<div id="video-player-container">
+
+
+<!-- Video Display -->
+<div class="intro">
+    <span>
+        <video id="videoPlayer" loop muted playsinline autoplay width="100%" onclick="setAttribute('controls','true')'" controls="true">
+            <source src="materials/genms_teaser_slow.mp4" type="video/mp4">
+        </video>
+    </span>
+</div>
+
+</div>
+
+
+<div class=blog-intro-container>
+  <p style="text-align:center"><a href="materials/paper.pdf" target="_blank" rel="noopener" data-display-type="button" class="custom-button">paper</a></p>  
+  <div class=intro>
+    <p><span style="font-weight: 400;">Generative models trained at scale can now produce novel text, video, and more recently, scientific data such as crystal structures. The ultimate goal for materials discovery, however, goes beyond generation: we desire a fully automated system that proposes, generates, and verifies crystal structures given a high-level user instruction. In this work, we formulate end-to-end language-to-structure generation as a multi-objective optimization problem, and propose Generative Hierarchical Materials Search (GenMS) for controllable generation of crystal structures. GenMS consists of (1) a language model that takes high-level natural language as input and generates intermediate textual information about a crystal (e.g., chemical formulae), and (2) a diffusion model that takes intermediate information as input and generates low-level continuous value crystal structures. GenMS additionally uses a graph neural network to predict properties (e.g., formation energy) from the generated crystal structures. During inference, GenMS leverages all three components to conduct a forward tree search over the space of possible structures. Experiments show that GenMS outperforms other alternatives both in satisfying user request and in generating low-energy structures. GenMS is able to generate complex structures such as double perovskites (or elpasolites), layered structures, and spinels, solely from natural language input.</p>
+  </div>
+</div>
+
+
+  
+<div class="copy" >
+
+<div class="copy" >
+  <div class=content id="search">    
+    <h2><span style="font-weight: 400;">Language-to-Structure as Multi-Objective Search</span></h2>
+    <p>
+      A wealth of high-level text data related to materials (e.g., Wikipedia articles, research papers, textbooks) are used to train LLMs, which can generate formulas from natural language (e.g., "give me the formula for a stable, novel chalcogenide with atom ratio 1:1:2"). Meanwhile, previous work has used low-level crystal databases (e.g., Materials Project, ICSD) to train diffusion models to generate crystal structures from chemical formulas. These data are used to train LLMs (${\pi_\text{hi}}$). Meanwhile, materials databases (e.g., Materials Project, ICSD) contain low-level crystal structures, which can be used to train diffusion models. We can formulate the language-to-structure problem as a multi-objective search problem:
+
+      <div style="text-align: center;">
+        <span>
+          <img width="560" src="materials/formula.png" class="attachment-full-width size-full-width" size="(max-width:860px) 860px">
+        </span>
+      </div>
+      
+      where $\pi_\text{hi}$ and $\pi_\text{lo}$ are LLM and diffusion models, and $R_\text{hi}$ and $R_\text{lo}$ are heuristic functions that can be specified by users (e.g., formation energy).  $z$ and $x$ represents chemical formulas and crystal structures, respectively. We can optimize this objective using hierarchical search:
+    </p>
+  </div>
+</div>
+
+<div class="single-image width-content">
+  <span>
+    <img width="860" height="645" src="materials/genms.png" class="attachment-full-width size-full-width" size="(max-width:860px) 100vw, 860px">
+  </span>
+</div>
+
+
+<div class="copy" >
+  <div class=content id="diffusion">
+    <h2><span style="font-weight: 400;">Diffusion with Compact Crystal Representation</span></h2>
+    <p> 
+      In order to support efficient tree search at inference time, we represent each crystal structure as a point cloud using an Ax4 tensor, where A represents the number of atoms in a crystal, and the inner 4 dimensions representing the location of an atom along with its atomic number. We then train a diffusion model to predict predict atom locations and atomic number as a continuous value, and round the continuous value to the closest atomic number. The diffusion model architecture with this compact crystal representation is shown below. Each atom undergoes blocks consisting of multi-layer perceptrons followed by orderinvariant self-attention. The MLP and self-attention blocks are repeated  times where each repetition increases the dimension of the hidden units. The concatenation of skip connections are employed as in other U-Net architectures.
+    </p>
+  </div>
+</div>
+
+<div class="single-image width-content">
+  <span>
+    <img width="860" height="645" src="materials/architecture.png" class="attachment-full-width size-full-width" size="(max-width:860px) 100vw, 860px">
+  </span>
+</div>
+
+
+<div class="copy" >
+  <div class=content id="evaluation">    
+    <h2><span style="font-weight: 400;">Evaluation</span></h2>
+    <p>We first conduct end-to-end evaluation of generating crystal structure from natural language for three families of crystals. Generative Hierarchical Materials Search (GenMS) significantly outperforms LLM prompting baselines in producing unique and low-energy (predicted by GNN) structures that satisfy user request. We further conduct DFT calculation to compute   on structures generated by GenMS. DFT calculations for baselines are eliminated as many structures from the baselines do not follow user instruction.
+    </p>
+
+<div class="single-image width-content">
+  <span>
+    <img width="660" height="445" src="materials/prompt.png" class="attachment-full-width size-full-width" size="(max-width:860px) 100vw, 860px">
+  </span>
+</div>
+
+    <p>Furthermore, when we increase the amount of compute during inference (i.e., sample more formula and structure candidates), GenMS can find more stable crystal structures with lower formation energy:
+    </p>
+
+<div class="single-image width-content">
+  <span>
+    <img width="660" height="445" src="materials/scale.png" class="attachment-full-width size-full-width" size="(max-width:860px) 100vw, 860px">
+  </span>
+</div>
+
+  </div>
+</div>
+
+<div class="copy" >
+  <div class=content id="visualization">    
+    <h2><span style="font-weight: 400;">Generated Structures</span></h2>
+    <p>
+Next, we test GenMS on a set of 8 ad hoc language input such as layered structures, Cl perovskite, etc. These names can refer to the same crystal structure (e.g., double perovskite and elpasolite), and GenMS can understand and generate structures upon both prompts. GenMS is able to search for the corresponding structures that satisfy user requests.
+    </p>
+  </div>
+</div>
+
+<div class="single-image width-content">
+  <span>
+    <img width="1060" height="445" src="materials/plot.png" class="attachment-full-width size-full-width" size="(max-width:860px) 100vw, 860px">
+  </span>
+</div>
+
+    <section id="bibtex">
+        <h2>Citation</h2>
+        <hr>
+        <pre><code>@article{yang2024generative,
+	    title={Generative Hierarchical Materials Search},
+	    author={Yang, Sherry and Batzner, Simon and Gao, Ruiqi and Aykol, Muratahan and Gaunt, Alexander and McMorrow, Brendan and Rezende, Danilo and Schuurmans, Dale and Mordatch, Igor and Cubuk, Ekin Dogus},
+	    journal={arXiv e-prints},
+	    year={2024}
+	    }</code></pre>
+    </section>
+
+
+</html>
+
+
